@@ -45,11 +45,18 @@ apiClient.interceptors.response.use(
           return apiClient(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, kick user to login page
+        // Refresh failed, kick user to login page and clear cookies
         if (typeof window !== 'undefined') {
+          await axios.post('/api/auth/logout').catch(() => {});
           window.location.href = '/login';
         }
       }
+    } else if (error.response?.status === 401 && originalRequest._retry) {
+       // If retry itself gave a 401, or something else
+       if (typeof window !== 'undefined') {
+          await axios.post('/api/auth/logout').catch(() => {});
+          window.location.href = '/login';
+       }
     }
     return Promise.reject(error);
   }
