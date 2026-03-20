@@ -1,0 +1,10 @@
+[
+  {
+    "id": "main",
+    "label": "main",
+    "items": [
+      { "title": "dashboard", "href": "/dashboard", "icon": "LayoutDashboard" },
+      { "title": "master", "href": "/masters", "icon": "Database" }
+    ]
+  }
+]

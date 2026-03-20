@@ -41,6 +41,8 @@ export interface MsnpIndicatorRecord {
   id: string;
   code: LocalizedField | string;
   name: LocalizedField | string;
+  description?: LocalizedField | string;
+  sectorId?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

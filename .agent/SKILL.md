@@ -42,6 +42,9 @@ description: Use this skill for every Next.js App Router dashboard project.
 - Components never call the API directly — always through a custom hook
 - shadcn/ui components used as-is — customize only via `className` prop
 - All colors, spacing, radius through design tokens — never arbitrary values
+- No layout styles (padding, max-width, `mx-auto`, etc.) in page components — all layout is handled uniformly in `layout.tsx`
+- No modal-based CRUD for main entities — always use dedicated pages for Create, Update, and View (Detail) states.
+- Minimal page components — always move core logic, forms, and tables into the `features/` directory and keep `app/` pages as thin entry points.
 
 ## What to read based on your task
 
@@ -68,6 +71,9 @@ Any chart
 
 Any page, layout, or component
 → references/folder-structure.md + references/conventions.md
+
+Managing Master Entities (Configuration)
+→ references/masters.md
 
 Any error handling
 → references/error-handling.md

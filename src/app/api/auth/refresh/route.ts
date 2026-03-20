@@ -14,12 +14,11 @@ export async function POST(req: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${refreshToken}`
       },
+      body: JSON.stringify({ refreshToken }),
     });
 
     const data = await res.json();
-
     const tokens = data?.data?.tokens || data?.data;
     
     if (res.ok && tokens?.accessToken) {
@@ -28,14 +27,16 @@ export async function POST(req: NextRequest) {
 
       const response = NextResponse.json({ success: true });
       
+      // Access token cookie (15 mins)
       response.cookies.set('access_token', newAccessToken, {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 60 * 60 * 24,
+        maxAge: 60 * 15, // 15 minutes
         path: '/',
       });
 
+      // Refresh token cookie (7 days)
       response.cookies.set('refresh_token', newRefreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

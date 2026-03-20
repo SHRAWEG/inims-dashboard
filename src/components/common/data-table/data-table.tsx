@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -14,19 +14,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useTranslation } from 'react-i18next';
-import { DataTablePagination } from './data-table-pagination';
-import { EmptyState } from '../empty-state';
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
+import { DataTablePagination } from "./data-table-pagination";
+import { EmptyState } from "../empty-state";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   pageCount: number;
   pagination: { pageIndex: number; pageSize: number };
-  onPaginationChange: (pagination: { pageIndex: number; pageSize: number }) => void;
+  onPaginationChange: (pagination: {
+    pageIndex: number;
+    pageSize: number;
+  }) => void;
   isLoading?: boolean;
+  rowCount?: number;
 }
 
 export function DataTable<TData, TValue>({
@@ -36,8 +40,9 @@ export function DataTable<TData, TValue>({
   pagination,
   onPaginationChange,
   isLoading,
+  rowCount,
 }: DataTableProps<TData, TValue>) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation("common");
 
   const table = useReactTable({
     data,
@@ -47,7 +52,7 @@ export function DataTable<TData, TValue>({
       pagination,
     },
     onPaginationChange: (updater) => {
-      if (typeof updater === 'function') {
+      if (typeof updater === "function") {
         onPaginationChange(updater(pagination));
       } else {
         onPaginationChange(updater);
@@ -55,23 +60,27 @@ export function DataTable<TData, TValue>({
     },
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
+    enableSorting: false,
   });
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border border-border bg-surface">
+    <>
+      <div className="rounded-xl rounded-b-none border border-slate-200 bg-white shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-surface-hover/50">
+          <TableHeader className="bg-slate-100 border-b border-slate-100/50">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      className="h-14 text-[11px] font-extrabold text-[#5e718d] uppercase tracking-widest px-6"
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -84,8 +93,8 @@ export function DataTable<TData, TValue>({
               Array.from({ length: 5 }).map((_, index) => (
                 <TableRow key={index}>
                   {columns.map((_, colIndex) => (
-                    <TableCell key={colIndex}>
-                      <Skeleton className="h-6 w-full max-w-[200px]" />
+                    <TableCell key={colIndex} className="py-8 px-6">
+                      <Skeleton className="h-6 w-full max-w-[180px] rounded-md bg-slate-100" />
                     </TableCell>
                   ))}
                 </TableRow>
@@ -94,14 +103,14 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className="hover:bg-surface-hover/50"
+                  data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-slate-50/30 transition-all duration-300 border-b border-slate-100/50 last:border-0"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="py-6 px-6 text-[13px]">
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -120,7 +129,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
-    </div>
+      <DataTablePagination table={table} rowCount={rowCount} />
+    </>
   );
 }
