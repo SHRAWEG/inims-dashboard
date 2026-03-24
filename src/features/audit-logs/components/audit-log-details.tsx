@@ -83,8 +83,12 @@ export function AuditLogDetails({ id }: AuditLogDetailsProps) {
                     </div>
                     <div>
                       <header className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t("audit-logs:performedBy")}</header>
-                      <p className="text-sm font-bold text-slate-800">{log.user.firstName} {log.user.lastName}</p>
-                      <p className="text-xs font-medium text-slate-500">{log.user.email}</p>
+                      <p className="text-sm font-bold text-slate-800">
+                        {log.user ? `${log.user.firstName} ${log.user.lastName}` : "System Action"}
+                      </p>
+                      <p className="text-xs font-medium text-slate-500">
+                        {log.user?.email || "Executed by internal system process"}
+                      </p>
                     </div>
                   </div>
 

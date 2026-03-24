@@ -11,7 +11,7 @@ export type AuditLogAction =
 
 export interface AuditLog {
   id: string;
-  user: {
+  user?: {
     id: string;
     firstName: string;
     lastName: string;

@@ -28,15 +28,23 @@ export const getAuditLogColumns = (
     header: "User",
     cell: ({ row }) => {
       const log = row.original;
-      const userName = `${log.user.firstName} ${log.user.lastName}`;
+      const userName = log.user 
+        ? `${log.user.firstName} ${log.user.lastName}` 
+        : "System";
+      
       return (
         <div className="flex items-center gap-3">
-          <div className="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs shrink-0">
-            {userName.charAt(0) || <UserIcon className="h-4 w-4" />}
+          <div className={cn(
+            "h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0",
+            log.user ? "bg-slate-100 text-slate-500" : "bg-primary/10 text-primary"
+          )}>
+            {log.user ? userName.charAt(0) : <Activity className="h-4 w-4" />}
           </div>
           <div className="flex flex-col min-w-0">
             <span className="font-bold text-slate-700 truncate">{userName}</span>
-            <span className="text-[10px] text-slate-400 font-medium truncate">{log.user.email}</span>
+            <span className="text-[10px] text-slate-400 font-medium truncate">
+              {log.user?.email || "internal@system.inims"}
+            </span>
           </div>
         </div>
       );
