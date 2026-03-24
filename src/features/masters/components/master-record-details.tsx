@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import { Edit, Calendar, Clock, CheckCircle2, XCircle } from "lucide-react";
+import { useMemo } from "react";
 
 import { apiClient } from "@/lib/api/client";
 import { MasterRecord } from "@/types/api.types";
@@ -12,12 +13,14 @@ import { formatDateTime } from "@/lib/utils/format";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/common/status-badge";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 
 interface MasterRecordDetailsProps {
   title: string;
   endpoint: string;
   id: string;
   basePath: string;
+  resource?: string;
 }
 
 export function MasterRecordDetails({
@@ -25,11 +28,18 @@ export function MasterRecordDetails({
   endpoint,
   id,
   basePath,
+  resource: providedResource,
 }: MasterRecordDetailsProps) {
   const { t } = useTranslation(["common", "masters"]);
   const { locale } = useLocale();
   const router = useRouter();
   const isIndicator = title.toLowerCase().includes("indicator");
+
+  // Derived resource name for permissions
+  const resource = useMemo(() => {
+    if (providedResource) return providedResource;
+    return endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
+  }, [providedResource, endpoint]);
 
   const { data: record, isLoading } = useQuery({
     queryKey: [endpoint, id],
@@ -84,17 +94,22 @@ export function MasterRecordDetails({
       {/* Header with Edit Action */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <PageHeader
-          title={t(`${title}.title`, { ns: "masters" })}
-          description={t("detailedConfig", { ns: "masters", item: t(`${title}.title`, { ns: "masters" }).toLowerCase() })}
+          title={t(`${title}`, { ns: "masters" })}
+          description={t("detailedConfig", {
+            ns: "masters",
+            item: t(`${title}.title`, { ns: "masters" }).toLowerCase(),
+          })}
           showBackButton={true}
           actions={
-            <Button
-              onClick={() => router.push(`${basePath}/${id}/update`)}
-              className="gap-2 bg-secondary hover:bg-secondary/90 shadow-md shadow-secondary/10 h-10 px-6 font-bold"
-            >
-              <Edit className="h-4 w-4" />
-              {t("edit")}
-            </Button>
+            <PermissionGuard permissions={[`${resource}:update`]} fallback={null}>
+              <Button
+                onClick={() => router.push(`${basePath}/${id}/update`)}
+                className="gap-2 bg-secondary hover:bg-secondary/90 shadow-md shadow-secondary/10 h-10 px-6 font-bold rounded-md"
+              >
+                <Edit className="h-4 w-4" />
+                {t("edit")}
+              </Button>
+            </PermissionGuard>
           }
         />
       </div>
@@ -214,24 +229,26 @@ export function MasterRecordDetails({
           </div>
 
           {/* Quick Help Card */}
-          <div className="bg-slate-900 p-6 rounded-lg shadow-lg relative overflow-hidden text-white">
-            <div className="relative z-10">
-              <h3 className="font-bold text-sm mb-2">Need to adjust?</h3>
-              <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                You can update the naming and status of this record. Historical
-                data will be preserved.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`${basePath}/${id}/update`)}
-                className="w-full bg-transparent border-slate-700 text-white hover:bg-white hover:text-slate-900 font-bold transition-all text-xs rounded-md"
-              >
-                Launch Editor
-              </Button>
+          <PermissionGuard permissions={[`${resource}:update`]} fallback={null}>
+            <div className="bg-slate-900 p-6 rounded-lg shadow-lg relative overflow-hidden text-white">
+              <div className="relative z-10">
+                <h3 className="font-bold text-sm mb-2">Need to adjust?</h3>
+                <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                  You can update the naming and status of this record. Historical
+                  data will be preserved.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`${basePath}/${id}/update`)}
+                  className="w-full bg-transparent border-slate-700 text-white hover:bg-white hover:text-slate-900 font-bold transition-all text-xs rounded-md"
+                >
+                  Launch Editor
+                </Button>
+              </div>
+              <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-white/5 rounded-full"></div>
             </div>
-            <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-white/5 rounded-full"></div>
-          </div>
+          </PermissionGuard>
         </div>
       </div>
     </div>

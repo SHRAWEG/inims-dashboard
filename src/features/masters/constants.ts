@@ -8,7 +8,17 @@ import {
   Activity 
 } from "lucide-react";
 
-export const MASTER_ITEMS = [
+export interface MasterItem {
+  title: string;
+  description: string;
+  href: string;
+  icon: any;
+  color: string;
+  bg: string;
+  permission: string; // Added permission requirement
+}
+
+export const MASTER_ITEMS: MasterItem[] = [
   {
     title: "sectors",
     description: "sectors.description",
@@ -16,6 +26,7 @@ export const MASTER_ITEMS = [
     icon: Briefcase,
     color: "text-blue-600",
     bg: "bg-blue-50",
+    permission: "sectors:view",
   },
   {
     title: "types",
@@ -24,6 +35,7 @@ export const MASTER_ITEMS = [
     icon: FileType2,
     color: "text-purple-600",
     bg: "bg-purple-50",
+    permission: "types:view",
   },
   {
     title: "administrativeLevels",
@@ -32,6 +44,7 @@ export const MASTER_ITEMS = [
     icon: MapPin,
     color: "text-red-600",
     bg: "bg-red-50",
+    permission: "administrative-levels:view",
   },
   {
     title: "frequencies",
@@ -40,6 +53,7 @@ export const MASTER_ITEMS = [
     icon: Calendar,
     color: "text-green-600",
     bg: "bg-green-50",
+    permission: "frequencies:view",
   },
   {
     title: "genders",
@@ -48,6 +62,7 @@ export const MASTER_ITEMS = [
     icon: Users2,
     color: "text-pink-600",
     bg: "bg-pink-50",
+    permission: "genders:view",
   },
   {
     title: "ageGroups",
@@ -56,6 +71,7 @@ export const MASTER_ITEMS = [
     icon: Users,
     color: "text-orange-600",
     bg: "bg-orange-50",
+    permission: "age-groups:view",
   },
   {
     title: "msnpIndicators",
@@ -64,5 +80,6 @@ export const MASTER_ITEMS = [
     icon: Activity,
     color: "text-cyan-600",
     bg: "bg-cyan-50",
+    permission: "msnp-indicators:view",
   },
 ];

@@ -41,4 +41,11 @@ export const ENDPOINTS = {
     BASE: '/msnp-indicators',
     BY_ID: (id: string) => `/msnp-indicators/${id}`,
   },
+  ROLES: {
+    BASE: '/roles',
+    BY_ID: (id: string) => `/roles/${id}`,
+  },
+  PERMISSIONS: {
+    BASE: '/permissions',
+  },
 } as const;

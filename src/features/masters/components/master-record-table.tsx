@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { useMasterData } from "@/hooks/use-master-data";
 import { useLocale } from "@/hooks/use-locale";
 import { MasterRecord } from "@/types/api.types";
-import { formatDateTime } from "@/lib/utils/format";
 
 import { DataTable } from "@/components/common/data-table/data-table";
 import { DataTableColumnHeader } from "@/components/common/data-table/data-table-column-header";
@@ -18,19 +17,21 @@ import { PageHeader } from "@/components/common/page-header";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { DataTableSearch } from "@/components/common/data-table/data-table-search";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 
 interface MasterRecordTableProps {
   title: string;
   endpoint: string;
   basePath: string;
+  resource?: string; // Optional resource name for permissions
   columns?: ColumnDef<any>[] | ((handlers: {
     onView: (id: string) => void;
     onEdit: (id: string) => void;
     onDelete: (record: any) => void;
     t: any;
     locale: string;
+    resource: string;
   }) => ColumnDef<any>[]);
 }
 
@@ -38,11 +39,18 @@ export function MasterRecordTable({
   title,
   endpoint,
   basePath,
+  resource: providedResource,
   columns: providedColumns,
 }: MasterRecordTableProps) {
   const { t } = useTranslation(["common", "masters"]);
   const { locale } = useLocale();
   const router = useRouter();
+
+  // Derived resource name for permissions (e.g. /sectors -> sectors)
+  const resource = useMemo(() => {
+    if (providedResource) return providedResource;
+    return endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
+  }, [providedResource, endpoint]);
 
   const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
   const [searchTerm, setSearchTerm] = useState("");
@@ -107,33 +115,39 @@ export function MasterRecordTable({
       header: t("actions", { ns: "masters" }),
       cell: ({ row }) => (
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push(`${basePath}/${row.original.id}`)}
-            className="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-            title="View Details"
-          >
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push(`${basePath}/${row.original.id}/update`)}
-            className="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
-            title="Edit"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setRecordToDelete(row.original)}
-            className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
-            title="Delete"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <PermissionGuard permissions={[`${resource}:view`]} fallback={null}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push(`${basePath}/${row.original.id}`)}
+              className="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              title="View Details"
+            >
+              <Eye className="h-4 w-4" />
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard permissions={[`${resource}:update`]} fallback={null}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push(`${basePath}/${row.original.id}/update`)}
+              className="h-8 w-8 text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              title="Edit"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </PermissionGuard>
+          <PermissionGuard permissions={[`${resource}:delete`]} fallback={null}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setRecordToDelete(row.original)}
+              className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50"
+              title="Delete"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </PermissionGuard>
         </div>
       ),
     },
@@ -145,6 +159,7 @@ export function MasterRecordTable({
     onDelete: (record: any) => setRecordToDelete(record),
     t,
     locale,
+    resource, // Pass resource to handlers
   };
 
   const columns = typeof providedColumns === "function" 
@@ -159,13 +174,15 @@ export function MasterRecordTable({
           description={t(`${title}.description`, { ns: "masters" })}
           showBackButton={true}
           actions={
-            <Button
-              onClick={() => router.push(`${basePath}/create`)}
-              className="gap-2 bg-primary hover:bg-primary/90 shadow-md shadow-primary/10 h-10 px-6 font-bold rounded-md"
-            >
-              <Plus className="h-4 w-4" />
-              {t("create")}
-            </Button>
+            <PermissionGuard permissions={[`${resource}:create`]} fallback={null}>
+              <Button
+                onClick={() => router.push(`${basePath}/create`)}
+                className="gap-2 bg-primary hover:bg-primary/90 shadow-md shadow-primary/10 h-10 px-6 font-bold rounded-md"
+              >
+                <Plus className="h-4 w-4" />
+                {t("create")}
+              </Button>
+            </PermissionGuard>
           }
         />
       </div>

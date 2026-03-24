@@ -1,7 +1,7 @@
 ---
 name: nextjs-dashboard
 description: Use this skill for every Next.js App Router dashboard project.
-  Covers project structure, API integration, auth, forms, tables, charts,
+  Covers project structure, API integration, auth, RBAC, forms, tables, charts,
   design system, error handling, i18n, and all coding conventions. Always
   read this skill before writing any Next.js code, creating any page,
   component, hook, or making any architectural decision. Applies to admin
@@ -19,6 +19,7 @@ description: Use this skill for every Next.js App Router dashboard project.
 - Visx (@visx/*) for complex charts, Recharts for simple charts
 - react-i18next for UI locale switching (en/ne)
 - Next.js middleware + httpOnly cookies for auth token storage
+- RBAC with custom `usePermissions` hook and `PermissionGuard` component
 
 ## Design system
 
@@ -45,6 +46,7 @@ description: Use this skill for every Next.js App Router dashboard project.
 - No layout styles (padding, max-width, `mx-auto`, etc.) in page components — all layout is handled uniformly in `layout.tsx`
 - No modal-based CRUD for main entities — always use dedicated pages for Create, Update, and View (Detail) states.
 - Minimal page components — always move core logic, forms, and tables into the `features/` directory and keep `app/` pages as thin entry points.
+- Use `PermissionGuard` to wrap sensitive UI elements (buttons, sections).
 
 ## What to read based on your task
 
@@ -59,6 +61,9 @@ Any API integration
 
 Any auth work
 → references/auth-flow.md
+
+Any RBAC / Permissions work
+→ references/rbac.md
 
 Any form
 → references/forms.md

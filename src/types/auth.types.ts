@@ -1,16 +1,18 @@
-export enum UserRole {
+export enum SystemRole {
   SUPER_ADMIN = 'SUPER_ADMIN',
   ADMIN = 'ADMIN',
-  USER = 'USER',
 }
 
 export interface User {
   id: string;
+  email: string;
   firstName: string;
   lastName: string;
-  email: string;
-  role: UserRole;
   isActive: boolean;
+  systemRole: SystemRole | null;
+  roleId: string | null;
+  roleName: string | null;
+  permissions: string[];
   createdAt: string;
   updatedAt: string;
 }

@@ -1,0 +1,15 @@
+{
+  "title": "Users",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "email": "Email",
+  "password": "Password",
+  "systemRole": "System Role",
+  "customRole": "Custom Role",
+  "selectSystemRole": "Select System Role",
+  "selectCustomRole": "Select Custom Role",
+  "none": "None",
+  "active": "Active",
+  "addUser": "Add User",
+  "editUser": "Edit User"
+}

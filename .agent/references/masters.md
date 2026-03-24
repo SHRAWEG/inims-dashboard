@@ -1,48 +1,45 @@
-# Masters Feature Guide
+# Managing Master Entities (Configuration)
 
-The Masters feature handles the management of core system entities used for configuration and data classification across the INIMS platform.
+Master entities (e.g., Sectors, Indicators, Types) are managed using a modular architecture to ensure type safety, granular validation, and a clean separation of concerns.
 
-## Folder Structure
+## Modular Structure
 
-```
-src/features/masters/
-  components/
-    master-card.tsx    ← individual entity card
-    masters-grid.tsx   ← grid layout for all master entities
-  constants.ts         ← definitions of all master entities (title, href, icon, colors)
-  index.ts             ← public API (MastersGrid, MASTER_ITEMS)
-```
+Each master entity is defined within `src/features/masters` with its own specialized components, types, and schemas:
 
-## Adding a New Master Entity
+- `src/features/masters/types/[master-name].ts`: Type definitions for the master.
+- `src/features/masters/schemas/[master-name].schema.ts`: Zod validation schemas.
+- `src/features/masters/components/columns/[master-name]-columns.tsx`: Specialized column definitions for the data table.
 
-To add a new master entity (e.g., "Disability Types"):
+## `MasterRecordTable` Component
 
-1. Create the new page at `src/app/(dashboard)/disability-types/page.tsx`.
-2. Update `src/features/masters/constants.ts` to include the new entity in `MASTER_ITEMS`:
+The `MasterRecordTable` is the central component for listing master records. It should be used in the page component as follows:
 
-```typescript
-{
-  title: "Disability Types",
-  description: "Manage classification of disability types",
-  href: "/masters/disability-types",
-  icon: Accessibility, // from lucide-react
-  color: "text-amber-600",
-  bg: "bg-amber-50",
+```tsx
+import { MasterRecordTable } from "@/features/masters";
+import { getSpecificColumns } from "@/features/masters/components/columns/specific-columns";
+
+export default function MastersPage() {
+  return (
+    <MasterRecordTable 
+      title="master_title" 
+      endpoint="/api/v1/masters/specific" 
+      basePath="/masters/specific" 
+      columns={(handlers) => getSpecificColumns(handlers)}
+    />
+  );
 }
 ```
 
-3. The new entity will automatically appear on the `/masters` landing page.
+## i18n for Masters
 
-## Use Cases
+User-facing strings for masters (titles, column headers, form labels) are managed in `src/i18n/locales/[locale]/masters.json`.
 
-- Providing a central hub for all system configurations.
-- Simplifying the sidebar by grouping configuration items under a single "Master" link.
-- Maintaining consistent styling for all master entity cards.
+- Use the `t('masters:...')` function from `react-i18next` to fetch translated strings.
+- Key structure: `masters.[title].title`, `masters.[title].columns.[column_name]`, etc.
 
-## Components
+## Conventions
 
-### MastersGrid
-The main component used on the `/masters` page. It renders all items defined in `MASTER_ITEMS` in a responsive 4-column grid (on large screens).
-
-### MasterCard
-A presentational component that renders an icon, title, description, and link for a specific master entity.
+- Always use specialized Zod schemas for forms to ensure data integrity.
+- Use `getCommonColumns` for standard masters and create specialized column functions for those with complex rendering requirements.
+- Ensure that the `basePath` and `endpoint` match the backend routes.
+- Use the dedicated Create and Update pages for each master instead of modals.

@@ -35,7 +35,9 @@ export function UserMenu() {
     <div className="flex items-center gap-3 pl-4 border-l border-slate-100">
       <div className="text-right hidden sm:block">
         <p className="text-xs font-bold text-slate-900 leading-none">{user.firstName} {user.lastName}</p>
-        <p className="text-[10px] text-slate-500 font-medium capitalize">{user.role}</p>
+        <p className="text-[10px] text-slate-500 font-medium capitalize">
+          {user.roleName || user.systemRole?.toLowerCase().replace("_", " ") || "User"}
+        </p>
       </div>
       
       <DropdownMenu>

@@ -34,10 +34,21 @@ export const sectorKeys = {
 
 **Route naming:** plural kebab-case matching backend — `/users`, `/msnp-indicators`
 
-**i18n namespace per domain:** one JSON file per domain per locale — `sectors.json`, `users.json`
+**i18n namespace per domain:** one JSON file per domain per locale — `sectors.json`, `users.json`, `masters.json`
+
+**Permissions and RBAC:**
+- Use `PermissionGuard` to wrap any UI element that requires specific permissions (e.g., Create/Edit/Delete buttons).
+- Use `usePermissions` hook in components for logic-based permission checks.
+- Always match frontend permission checks with backend `@Permissions` decorators.
+
+**Master Entities modularity:**
+- Do not use generic master components for entities with unique fields or validation rules.
+- Follow the structure: `features/masters/types`, `features/masters/schemas`, and `features/masters/components/columns`.
+- Use `MasterRecordTable` as the standard entry point for master lists.
 
 **TypeScript rules:**
 - No `any` — use `unknown` and narrow
 - No non-null assertion `!` without a comment explaining why
 - All functions have explicit return types
 - All props interfaces named `<Component>Props`
+- Use `enum` for fixed sets of values (e.g., `SystemRole`).

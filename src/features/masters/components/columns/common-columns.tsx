@@ -4,9 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { BaseMasterRecord } from "../../types/masters.types";
 import { DataTableColumnHeader } from "@/components/common/data-table/data-table-column-header";
 import { StatusBadge } from "@/components/common/status-badge";
-import { formatDateTime } from "@/lib/utils/format";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye } from "lucide-react";
+import { PermissionGuard } from "@/components/common/PermissionGuard";
 
 export const getCommonColumns = ({
   locale,
@@ -14,12 +14,14 @@ export const getCommonColumns = ({
   onEdit,
   onDelete,
   t,
+  resource,
 }: {
   locale: string;
   onView: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (record: BaseMasterRecord) => void;
   t: any;
+  resource?: string;
 }): ColumnDef<BaseMasterRecord>[] => [
   {
     accessorKey: "name",
@@ -49,30 +51,36 @@ export const getCommonColumns = ({
     header: t("actions", { ns: "masters" }),
     cell: ({ row }) => (
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onView(row.original.id)}
-          className="h-8 w-8 text-slate-400"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onEdit(row.original.id)}
-          className="h-8 w-8 text-slate-400"
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onDelete(row.original)}
-          className="h-8 w-8 text-red-400"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <PermissionGuard permissions={resource ? [`${resource}:view`] : []} fallback={null}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onView(row.original.id)}
+            className="h-8 w-8 text-slate-400"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        </PermissionGuard>
+        <PermissionGuard permissions={resource ? [`${resource}:update`] : []} fallback={null}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(row.original.id)}
+            className="h-8 w-8 text-slate-400"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        </PermissionGuard>
+        <PermissionGuard permissions={resource ? [`${resource}:delete`] : []} fallback={null}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(row.original)}
+            className="h-8 w-8 text-red-400"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </PermissionGuard>
       </div>
     ),
   },

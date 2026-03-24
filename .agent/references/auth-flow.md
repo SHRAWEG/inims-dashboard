@@ -63,93 +63,79 @@ export async function getSession(): Promise<Session | null> {
 }
 ```
 
-## Section 4 — Axios request interceptor
+## Section 4 — Axios Interceptors
 
-Attach token from cookie on every request. Since cookies are httpOnly, the browser sends them automatically — the axios interceptor reads them via the Next.js API route, not directly:
+The `apiClient` uses interceptors to handle token attachment and automatic token refresh.
+
+### Request Interceptor
+Reads the `access_token` from cookies and attaches it as a Bearer token.
 
 ```ts
 apiClient.interceptors.request.use((config) => {
-  // cookies are sent automatically by the browser
-  // no manual token attachment needed for browser requests
+  const token = getCookie('access_token');
+  if (token && config.headers) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 ```
 
-For server-side requests (Server Components, Route Handlers), pass the cookie header manually:
+### Response Interceptor (Token Refresh)
+Handles `401 Unauthorized` errors by attempting to refresh the token via `/api/auth/refresh`.
 
 ```ts
-import { cookies } from 'next/headers';
-
-export async function serverApiClient() {
-  const cookieStore = cookies();
-  return axios.create({
-    baseURL: process.env.API_URL,
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
-}
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const refreshResponse = await axios.post('/api/auth/refresh');
+        if (refreshResponse.status === 200) {
+          return apiClient(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed, logout and redirect
+        if (typeof window !== 'undefined') {
+          await axios.post('/api/auth/logout').catch(() => {});
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 ```
 
 ## Section 5 — Middleware
 
 `src/middleware.ts`:
-```ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+(Remains largely the same, ensuring unauthorized users are redirected to login)
 
-const PUBLIC_ROUTES = ['/login'];
-
-export function middleware(request: NextRequest) {
-  const accessToken = request.cookies.get('access_token')?.value;
-  const pathname = request.nextUrl.pathname;
-  const isPublicRoute = PUBLIC_ROUTES.some(r => pathname.startsWith(r));
-
-  if (!accessToken && !isPublicRoute) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('from', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (accessToken && isPublicRoute) {
-    return NextResponse.redirect(new URL('/home', request.url));
-  }
-
-  return NextResponse.next();
-}
-
-export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
-};
-```
-
-## Section 6 — Current user hook
+## Section 6 — Authentication Hook
 
 `src/hooks/use-auth.ts`:
+Provides user data, authentication status, and logout functionality.
+
 ```ts
 export function useAuth() {
-  const queryClient = useQueryClient();
-
   const { data: user, isLoading } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: () => usersApi.getMe(),
-    staleTime: 5 * 60 * 1000,
-    retry: false,
+    // ...
   });
 
-  const logoutMutation = useMutation({
-    mutationFn: () => fetch('/api/auth/logout', { method: 'POST' }),
-    onSuccess: () => {
-      queryClient.clear();
+  const logout = async () => {
+    try {
+      await axios.post('/api/auth/logout');
       window.location.href = '/login';
-    },
-  });
-
-  return {
-    user,
-    isLoading,
-    isAuthenticated: !!user,
-    logout: logoutMutation.mutate,
+    } catch (error) {
+      console.error('Logout failed', error);
+      window.location.href = '/login'; // Force redirect anyway
+    }
   };
+
+  return { user, isLoading, isAuthenticated: !!user, logout };
 }
 ```

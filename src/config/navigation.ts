@@ -8,6 +8,7 @@ import {
   Users,
   Activity,
   Database,
+  ShieldCheck,
 } from "lucide-react";
 import navigationData from "./navigation.json";
 
@@ -15,6 +16,9 @@ export interface NavItem {
   title: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  isSubMenu?: boolean;
+  items?: NavItem[];
+  permission?: string; // Added permission field
 }
 
 export interface NavGroup {
@@ -34,6 +38,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Users,
   Activity,
   Database,
+  ShieldCheck,
 };
 
 export const getIcon = (iconName: string) => {
@@ -44,6 +49,9 @@ interface RawNavItem {
   title: string;
   href: string;
   icon: string;
+  isSubMenu?: boolean;
+  items?: RawNavItem[];
+  permission?: string; // Added permission field
 }
 
 interface RawNavGroup {
@@ -53,11 +61,14 @@ interface RawNavGroup {
   items: RawNavItem[];
 }
 
+const mapNavItem = (item: RawNavItem): NavItem => ({
+  ...item,
+  icon: getIcon(item.icon),
+  items: item.items?.map(mapNavItem),
+});
+
 export const navigationConfig = (navigationData as RawNavGroup[]).map((group) => ({
   ...group,
   iconComponent: group.icon ? getIcon(group.icon) : undefined,
-  items: group.items.map((item) => ({
-    ...item,
-    icon: getIcon(item.icon),
-  })),
+  items: group.items.map(mapNavItem),
 }));

@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils/cn";
-import { ChevronDown, Database } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useTranslation } from "react-i18next";
 import { navigationConfig, type NavItem } from "@/config/navigation";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export function SidebarContent({
   isCollapsed = false,
@@ -16,12 +16,43 @@ export function SidebarContent({
 }) {
   const pathname = usePathname();
   const { t } = useTranslation("navigation");
+  const { hasPermission } = usePermissions();
+  
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    masters: true,
+    main: true,
   });
+  const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    // Auto-expand submenus if a child is active
+    const newOpenSubMenus: Record<string, boolean> = { ...openSubMenus };
+    let changed = false;
+
+    navigationConfig.forEach(group => {
+      group.items.forEach(item => {
+        if (item.isSubMenu && item.items) {
+          const hasActiveChild = item.items.some(subItem => 
+            pathname === subItem.href || (subItem.href !== "/" && pathname.startsWith(subItem.href))
+          );
+          if (hasActiveChild && !newOpenSubMenus[item.title]) {
+            newOpenSubMenus[item.title] = true;
+            changed = true;
+          }
+        }
+      });
+    });
+
+    if (changed) {
+      setOpenSubMenus(newOpenSubMenus);
+    }
+  }, [pathname]);
 
   const toggleGroup = (groupId: string) => {
-    setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+    setOpenGroups((prev: Record<string, boolean>) => ({ ...prev, [groupId]: !prev[groupId] }));
+  };
+
+  const toggleSubMenu = (title: string) => {
+    setOpenSubMenus((prev: Record<string, boolean>) => ({ ...prev, [title]: !prev[title] }));
   };
 
   const NavLink = ({
@@ -31,9 +62,76 @@ export function SidebarContent({
     item: NavItem;
     isSubItem?: boolean;
   }) => {
+    // Permission Check
+    if (item.permission && !hasPermission(item.permission)) {
+      return null;
+    }
+
+    // Submenu filtering: Check if ANY child is visible
+    if (item.isSubMenu && item.items) {
+      const visibleChildren = item.items.filter(sub => !sub.permission || hasPermission(sub.permission));
+      if (visibleChildren.length === 0) return null;
+    }
+
+    const isSubMenuActive = item.items?.some(subItem => 
+      pathname === subItem.href || (subItem.href !== "/" && pathname.startsWith(subItem.href))
+    );
     const isActive =
       pathname === item.href ||
-      (item.href !== "/" && pathname.startsWith(item.href));
+      (item.href !== "/" && pathname.startsWith(item.href)) ||
+      isSubMenuActive;
+
+    const isOpen = openSubMenus[item.title] ?? false;
+
+    if (item.isSubMenu && item.items) {
+      return (
+        <div className="space-y-1">
+          <button
+            onClick={() => toggleSubMenu(item.title)}
+            className={cn(
+              "flex items-center justify-between w-full px-3 py-2.5 rounded-lg transition-all duration-200 group",
+              isActive && !isOpen
+                ? "bg-primary text-white shadow-md"
+                : "text-secondary hover:bg-slate-50 hover:text-secondary",
+            )}
+            title={isCollapsed ? t(item.title) : undefined}
+          >
+            <div className="flex items-center gap-3">
+              <item.icon
+                className={cn(
+                  "w-5 h-5 transition-colors shrink-0",
+                  isActive && !isOpen ? "text-white" : "text-secondary group-hover:text-secondary",
+                )}
+              />
+              {!isCollapsed && (
+                <span className={cn("text-sm truncate", isActive ? "font-bold" : "font-semibold")}>
+                  {t(item.title)}
+                </span>
+              )}
+            </div>
+            {!isCollapsed && (
+              <ChevronDown
+                className={cn(
+                  "w-4 h-4 transition-transform duration-300 opacity-60",
+                  isOpen ? "rotate-180" : "rotate-0",
+                )}
+              />
+            )}
+          </button>
+          
+          <div
+            className={cn(
+              "space-y-1 overflow-hidden transition-all duration-300 ease-in-out pl-4",
+              isOpen && !isCollapsed ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+            )}
+          >
+            {item.items.map((subItem) => (
+              <NavLink key={subItem.href} item={subItem} isSubItem={true} />
+            ))}
+          </div>
+        </div>
+      );
+    }
 
     return (
       <Link
@@ -107,83 +205,34 @@ export function SidebarContent({
         )}
       >
         {navigationConfig.map((group) => {
-          const isCollapsible = !!group.iconComponent;
           const isOpen = openGroups[group.id] ?? false;
-          const isGroupActive = group.items.some((item) =>
-            pathname.startsWith(item.href),
-          );
-          const GroupIcon = group.iconComponent;
+          
+          // Filter group items by permission
+          const visibleItems = group.items.filter(item => {
+             if (item.permission && !hasPermission(item.permission)) return false;
+             if (item.isSubMenu && item.items) {
+               return item.items.some(sub => !sub.permission || hasPermission(sub.permission));
+             }
+             return true;
+          });
+
+          if (visibleItems.length === 0) return null;
 
           return (
             <div key={group.id} className="space-y-2">
-              {/* Group Header */}
-              {isCollapsible ? (
-                !isCollapsed ? (
-                  <button
-                    onClick={() => toggleGroup(group.id)}
-                    className={cn(
-                      "flex items-center justify-between w-full px-3 py-2.5 rounded-lg transition-all duration-200 group",
-                      isGroupActive && !isOpen
-                        ? "bg-slate-50 text-secondary"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-secondary",
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="p-1 rounded bg-secondary/5 text-secondary group-hover:bg-secondary/10 transition-colors">
-                        {GroupIcon && <GroupIcon className="w-4 h-4" />}
-                      </div>
-                      <span className="text-[11px] font-bold uppercase tracking-wider">
-                        {t(group.label)}
-                      </span>
-                    </div>
-                    <ChevronDown
-                      className={cn(
-                        "w-4 h-4 transition-transform duration-300 opacity-60",
-                        isOpen ? "rotate-180" : "rotate-0",
-                      )}
-                    />
-                  </button>
-                ) : (
-                  <div className="flex justify-center py-2">
-                    {GroupIcon && (
-                      <GroupIcon
-                        className={cn(
-                          "w-5 h-5 transition-colors",
-                          isGroupActive ? "text-secondary" : "text-secondary",
-                        )}
-                      />
-                    )}
-                  </div>
-                )
-              ) : (
-                <p
-                  className={cn(
-                    "px-3 text-[10px] font-bold text-slate-400 mb-2 transition-all duration-300 uppercase tracking-widest",
-                    isCollapsed
-                      ? "opacity-0 h-0 overflow-hidden"
-                      : "opacity-100",
-                  )}
-                >
+              {/* Group Header (if multiple groups or label needed) */}
+              {!isCollapsed && group.label !== "main" && (
+                <p className="px-3 text-[10px] font-bold text-slate-400 mb-2 transition-all duration-300 uppercase tracking-widest">
                   {t(group.label)}
                 </p>
               )}
 
               {/* Group Items */}
-              <div
-                className={cn(
-                  "space-y-1 overflow-hidden transition-all duration-300 ease-in-out",
-                  isCollapsible
-                    ? isOpen && !isCollapsed
-                      ? "max-h-[500px] mt-1 opacity-100"
-                      : "max-h-0 opacity-0"
-                    : "max-h-none opacity-100",
-                )}
-              >
+              <div className="space-y-1">
                 {group.items.map((item: NavItem) => (
                   <NavLink
                     key={item.href}
                     item={item}
-                    isSubItem={isCollapsible}
                   />
                 ))}
               </div>

@@ -4,6 +4,16 @@
     "label": "main",
     "items": [
       { "title": "dashboard", "href": "/dashboard", "icon": "LayoutDashboard" },
+      {
+        "title": "userManagement",
+        "href": "#",
+        "icon": "Users",
+        "isSubMenu": true,
+        "items": [
+          { "title": "users", "href": "/users", "icon": "Users2", "permission": "users:view" },
+          { "title": "roles", "href": "/roles", "icon": "ShieldCheck", "permission": "roles:view" }
+        ]
+      },
       { "title": "master", "href": "/masters", "icon": "Database" }
     ]
   }

@@ -29,6 +29,9 @@ export function PageHeader({
   const getBreadcrumbLabel = (segment: string) => {
     if (segment === "records") return "Nutrition Records";
     if (segment === "dashboard") return "Dashboard";
+    if (segment === "users") return "Users";
+    if (segment === "roles") return "Roles";
+    if (segment === "masters") return "Masters";
     return segment
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
