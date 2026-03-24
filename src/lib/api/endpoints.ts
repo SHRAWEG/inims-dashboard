@@ -48,4 +48,9 @@ export const ENDPOINTS = {
   PERMISSIONS: {
     BASE: '/permissions',
   },
+  AUDIT_LOGS: {
+    BASE: '/audit-logs',
+    BY_ID: (id: string) => `/audit-logs/${id}`,
+    METADATA: '/audit-logs/filters/metadata',
+  },
 } as const;

@@ -9,6 +9,7 @@ import {
   Activity,
   Database,
   ShieldCheck,
+  ShieldAlert,
 } from "lucide-react";
 import navigationData from "./navigation.json";
 
@@ -39,6 +40,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Activity,
   Database,
   ShieldCheck,
+  ShieldAlert,
 };
 
 export const getIcon = (iconName: string) => {

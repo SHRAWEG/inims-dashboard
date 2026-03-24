@@ -5,7 +5,14 @@ import { Input } from "@/components/ui/input";
 import { LocaleSwitcher } from "./locale-switcher";
 import { UserMenu } from "./user-menu";
 import { SidebarContent } from "./sidebar";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription 
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
 export function Topbar({
@@ -26,6 +33,10 @@ export function Topbar({
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="p-0 w-64 border-none">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Navigation Menu</SheetTitle>
+              <SheetDescription>Dashboard navigation and management tools</SheetDescription>
+            </SheetHeader>
             <SidebarContent />
           </SheetContent>
         </Sheet>

@@ -1,0 +1,21 @@
+{
+  "title": "Audit Logs",
+  "description": "Examine system activity and track sensitive data changes across the platform",
+  "logEntry": "Log Entry",
+  "logDetailDesc": "Detailed view of the specific system event, including data diffs",
+  "logNotFound": "The requested audit log entry was not found or is inaccessible",
+  "eventSummary": "Event Summary",
+  "performer": "Performed By",
+  "action": "Action Type",
+  "targetResource": "Target Resource",
+  "performedBy": "Performed By",
+  "origin": "Origin of Request",
+  "dataChanges": "Data Snapshot Comparison",
+  "before": "Previous State",
+  "after": "New State",
+  "filterByUser": "Enter User ID to search",
+  "startDate": "From Date",
+  "endDate": "To Date",
+  "resourceId": "Resource ID (UUID)",
+  "noMastersAvailable": "You do not have permission to view any masters"
+}

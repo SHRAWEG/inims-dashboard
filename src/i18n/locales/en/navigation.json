@@ -4,5 +4,6 @@
   "userManagement": "User Management",
   "users": "Users List",
   "roles": "Roles & Permissions",
-  "master": "Master Management"
+  "master": "Master Management",
+  "auditLogs": "Audit Logs"
 }

@@ -14,7 +14,8 @@
           { "title": "roles", "href": "/roles", "icon": "ShieldCheck", "permission": "roles:view" }
         ]
       },
-      { "title": "master", "href": "/masters", "icon": "Database" }
+      { "title": "master", "href": "/masters", "icon": "Database" },
+      { "title": "auditLogs", "href": "/audit-logs", "icon": "ShieldAlert", "permission": "audit-logs:view" }
     ]
   }
 ]
