@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { useEffect, useMemo } from "react";
 import { Shield, Plus, Minus } from "lucide-react";
 
+import { handleApiError } from "@/lib/utils/error-handler";
 import { PageHeader } from "@/components/common/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -101,7 +102,7 @@ export function RoleForm({ mode, id }: RoleFormProps) {
       }
       router.push("/roles");
     } catch (error) {
-      toast.error(t("common:error", { defaultValue: "An error occurred" }));
+      handleApiError(error, form.setError, t("common:error", { defaultValue: "An error occurred" }));
     }
   };
 

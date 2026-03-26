@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { Check, ChevronsUpDown, Shield, User as UserIcon } from "lucide-react";
 
 import { PageHeader } from "@/components/common/page-header";
+import { handleApiError } from "@/lib/utils/error-handler";
 import { cn } from "@/lib/utils/cn";
 import {
   Form,
@@ -111,7 +112,7 @@ export function UserForm({ mode, id }: UserFormProps) {
       }
       router.push("/users");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || t("common:error", { defaultValue: "An error occurred" }));
+      handleApiError(error, form.setError, t("common:error", { defaultValue: "An error occurred" }));
     }
   };
 

@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import { useMasterData } from "@/hooks/use-master-data";
+import { handleApiError } from "@/lib/utils/error-handler";
 import { apiClient } from "@/lib/api/client";
 import { MasterRecord } from "@/types/api.types";
 import { PageHeader } from "@/components/common/page-header";
@@ -108,9 +109,10 @@ export function MasterRecordForm({
       }
       router.back();
     } catch (error) {
-      toast.error(t("error"));
+      handleApiError(error, form.setError, t("error"));
     }
   };
+
 
   if (mode === "update" && isFetching) {
     return (
